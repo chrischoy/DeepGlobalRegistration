@@ -1,0 +1,8 @@
+numpy
+torch
+scipy
+matplotlib
+open3d
+tensorboardX
+MinkowskiEngine
+easydict

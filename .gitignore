@@ -1,0 +1,19 @@
+# Temp files
+.DS_Store
+__pycache__
+*.swp
+*.swo
+*.orig
+.idea
+outputs/
+*.pyc
+*.npy
+*.pdf
+util/*.sh
+checkpoints
+# *.npz
+3dmatch/
+tmp.txt
+output.ply
+bunny.ply
+test.sh
