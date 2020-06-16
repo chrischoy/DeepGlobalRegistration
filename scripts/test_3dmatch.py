@@ -22,6 +22,7 @@ from model import load_model
 
 from dataloader.data_loaders import ThreeDMatchTrajectoryDataset
 from core.knn import find_knn_gpu
+from core.deep_global_registration import DeepGlobalRegistration
 
 from util.timer import Timer
 from util.pointcloud import make_open3d_point_cloud
@@ -158,7 +159,6 @@ def evaluate(methods, method_names, data_loader, config, debug=False):
 if __name__ == '__main__':
   config = get_config()
   print(config)
-  from core.deep_global_registration import DeepGlobalRegistration
 
   dgr = DeepGlobalRegistration(config)
 
