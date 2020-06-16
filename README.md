@@ -121,7 +121,7 @@ We also provide experimental results of 3DMatch comparisons in `results.npz`. To
 python scripts/analyze_stats.py assets/results.npz
 ```
 
-## Cite our work
+## Citing our work
 Please cite the following papers if you use our code:
 
 ```latex
@@ -146,3 +146,11 @@ Please cite the following papers if you use our code:
   year={2019}
 }
 ```
+
+## Concurrent Works
+
+There have a number of 3D registration works published concurrently.
+
+- Gojcic et al., [Learning Multiview 3D Point Cloud Registration, CVPR'20](https://github.com/zgojcic/3D_multiview_reg)
+- Wang et al., [PRNet: Self-Supervised Learning for Partial-to-Partial Registration, NeurIPS'19](https://github.com/WangYueFt/prnet)
+- Yang et al., [TEASER: Fast and Certifiable Point Cloud Registration, arXiv'20](https://github.com/MIT-SPARK/TEASER-plusplus)
