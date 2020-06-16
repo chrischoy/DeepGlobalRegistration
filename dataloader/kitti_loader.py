@@ -195,7 +195,7 @@ class KITTIPairDataset(PairDataset):
     # Get matches
     matches = get_matching_indices(pcd0, pcd1, trans, matching_search_voxel_size)
     if len(matches) < 1000:
-      raise ValueError(f"{drive}, {t0}, {t1}")
+      raise ValueError(f"Insufficient matches in {drive}, {t0}, {t1}")
 
     # Get features
     npts0 = len(sel0)
