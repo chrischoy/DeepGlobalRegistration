@@ -18,7 +18,7 @@ from dataloader.base_loader import CollationFunctionFactory
 from util.pointcloud import make_open3d_point_cloud, make_open3d_feature, pointcloud_to_spheres
 from util.timer import AverageMeter, Timer
 
-from scripts.test_3dmatch import DGRWrapper, FPFHWrapper, FCGFWrapper, rte_rre
+from scripts.test_3dmatch import rte_rre
 
 ch = logging.StreamHandler(sys.stdout)
 logging.getLogger().setLevel(logging.INFO)
@@ -69,7 +69,6 @@ def evaluate(config, data_loader, method):
     stats[i, 3] = method.reg_timer.diff + method.feat_timer.diff
     stats[i, 4] = drive
 
-    # stats[i, :3] = rte_rre(T_pred, T_gt, TE_THRESH, RE_THRESH)
     if stats[i, 0] == 0:
       logging.info(f"Failed with RTE: {stats[i, 1]}, RRE: {stats[i, 2]}")
 
