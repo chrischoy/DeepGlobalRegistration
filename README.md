@@ -94,13 +94,17 @@ The entire network depends on pretrained [FCGF models](https://github.com/chrisc
 You may download preprocessed data and train via these commands:
 ```shell
 ./scripts/download_3dmatch.sh /path/to/3dmatch
-export THREED_MATCH_DIR=/path/to/3dmatch; FCGF_WEIGHTS=/path/to/fcgf_3dmatch.pth ./scripts/train_3dmatch.sh
+export THREED_MATCH_DIR=/path/to/3dmatch
+export FCGF_WEIGHTS=/path/to/fcgf_3dmatch.pth
+./scripts/train_3dmatch.sh
 ```
 
 ### KITTI
 Follow the instruction on [KITTI Odometry website](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) to download the KITTI odometry train set. Then train with
 ```shell
-export KITTI_PATH=/path/to/kitti; FCGF_WEIGHTS=/path/to/fcgf_kitti.pth ./scripts/train_kitti.sh
+export KITTI_PATH=/path/to/kitti
+export FCGF_WEIGHTS=/path/to/fcgf_kitti.pth
+./scripts/train_kitti.sh
 ```
 
 ## Testing

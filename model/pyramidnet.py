@@ -15,7 +15,7 @@ from model.residual_block import get_block, conv, conv_tr, conv_norm_non
 class PyramidModule(ME.MinkowskiNetwork):
   NONLINEARITY = 'ELU'
   NORM_TYPE = 'BN'
-  REGION_TYPE = ME.RegionType.HYPERCUBE
+  REGION_TYPE = ME.RegionType.HYPER_CUBE
 
   def __init__(self,
                inc,
@@ -55,7 +55,7 @@ class PyramidModule(ME.MinkowskiNetwork):
             kernel_size=3,
             stride=2,
             dilation=1,
-            has_bias=False,
+            bias=False,
             region_type=self.REGION_TYPE,
             dimension=dimension),
         get_norm(
@@ -93,7 +93,7 @@ class PyramidNet(ME.MinkowskiNetwork):
   DEPTHS = [1, 1, 1, 1]
   # None        b1, b2, b3, btr3, btr2
   #               1  2  3 -3 -2 -1
-  REGION_TYPE = ME.RegionType.HYPERCUBE
+  REGION_TYPE = ME.RegionType.HYPER_CUBE
 
   # To use the model, must call initialize_coords before forward pass.
   # Once data is processed, call clear to reset the model before calling initialize_coords
@@ -157,8 +157,8 @@ class PyramidNet(ME.MinkowskiNetwork):
     if self.normalize_feature:
       return ME.SparseTensor(
           out.F / (torch.norm(out.F, p=2, dim=1, keepdim=True) + 1e-8),
-          coords_key=out.coords_key,
-          coords_manager=out.coords_man)
+          coordinate_map_key=out.coordinate_map_key,
+          coordinate_manager=out.coordinate_manager)
     else:
       return out
 

@@ -18,7 +18,7 @@ class ResUNet(ME.MinkowskiNetwork):
   BLOCK_NORM_TYPE = 'BN'
   CHANNELS = [None, 32, 64, 128]
   TR_CHANNELS = [None, 32, 64, 64]
-  REGION_TYPE = ME.RegionType.HYPERCUBE
+  REGION_TYPE = ME.RegionType.HYPER_CUBE
 
   # To use the model, must call initialize_coords before forward pass.
   # Once data is processed, call clear to reset the model before calling initialize_coords
@@ -43,7 +43,7 @@ class ResUNet(ME.MinkowskiNetwork):
         kernel_size=conv1_kernel_size,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm1 = get_norm(NORM_TYPE, CHANNELS[1], bn_momentum=bn_momentum, dimension=D)
 
@@ -61,7 +61,7 @@ class ResUNet(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm2 = get_norm(NORM_TYPE, CHANNELS[2], bn_momentum=bn_momentum, dimension=D)
 
@@ -79,7 +79,7 @@ class ResUNet(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm3 = get_norm(NORM_TYPE, CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
 
@@ -97,7 +97,7 @@ class ResUNet(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm3_tr = get_norm(
         NORM_TYPE, TR_CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
@@ -116,7 +116,7 @@ class ResUNet(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm2_tr = get_norm(
         NORM_TYPE, TR_CHANNELS[2], bn_momentum=bn_momentum, dimension=D)
@@ -135,7 +135,7 @@ class ResUNet(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
 
     # self.block1_tr = BasicBlockBN(TR_CHANNELS[1], TR_CHANNELS[1], bn_momentum=bn_momentum, D=D)
@@ -146,7 +146,7 @@ class ResUNet(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=True,
+        bias=True,
         dimension=D)
 
   def forward(self, x):
@@ -185,8 +185,8 @@ class ResUNet(ME.MinkowskiNetwork):
     if self.normalize_feature:
       return ME.SparseTensor(
           out.F / (torch.norm(out.F, p=2, dim=1, keepdim=True) + 1e-8),
-          coords_key=out.coords_key,
-          coords_manager=out.coords_man)
+          coordinate_map_key=out.coordinate_map_key,
+          coordinate_manager=out.coordinate_manager)
     else:
       return out
 
@@ -202,7 +202,7 @@ class ResUNetBNF(ResUNet):
 
 
 class ResUNetBNFX(ResUNetBNF):
-  REGION_TYPE = ME.RegionType.HYPERCROSS
+  REGION_TYPE = ME.RegionType.HYPER_CROSS
 
 
 class ResUNetSP(ME.MinkowskiNetwork):
@@ -213,7 +213,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
   # None        b1, b2, b3, btr3, btr2
   #               1  2  3 -3 -2 -1
   DEPTHS = [None, 1, 1, 1, 1, 1, None]
-  REGION_TYPE = ME.RegionType.HYPERCUBE
+  REGION_TYPE = ME.RegionType.HYPER_CUBE
 
   # To use the model, must call initialize_coords before forward pass.
   # Once data is processed, call clear to reset the model before calling initialize_coords
@@ -238,7 +238,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
         kernel_size=conv1_kernel_size,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm1 = get_norm(NORM_TYPE, CHANNELS[1], bn_momentum=bn_momentum, dimension=D)
@@ -260,7 +260,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm2 = get_norm(NORM_TYPE, CHANNELS[2], bn_momentum=bn_momentum, dimension=D)
 
@@ -281,7 +281,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm3 = get_norm(NORM_TYPE, CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
 
@@ -302,7 +302,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm3_tr = get_norm(
         NORM_TYPE, TR_CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
@@ -324,7 +324,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm2_tr = get_norm(
@@ -346,7 +346,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
 
@@ -358,7 +358,7 @@ class ResUNetSP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=True,
+        bias=True,
         dimension=D)
 
   def forward(self, x):
@@ -402,14 +402,14 @@ class ResUNetSP(ME.MinkowskiNetwork):
     if self.normalize_feature:
       return ME.SparseTensor(
           out.F / (torch.norm(out.F, p=2, dim=1, keepdim=True) + 1e-8),
-          coords_key=out.coords_key,
-          coords_manager=out.coords_man)
+          coordinate_map_key=out.coordinate_map_key,
+          coordinate_manager=out.coordinate_manager)
     else:
       return out
 
 
 class ResUNetBNSPC(ResUNetSP):
-  REGION_TYPE = ME.RegionType.HYPERCROSS
+  REGION_TYPE = ME.RegionType.HYPER_CROSS
 
 
 class ResUNetINBNSPC(ResUNetBNSPC):
@@ -421,7 +421,7 @@ class ResUNet2(ME.MinkowskiNetwork):
   BLOCK_NORM_TYPE = 'BN'
   CHANNELS = [None, 32, 64, 128, 256]
   TR_CHANNELS = [None, 32, 64, 64, 128]
-  REGION_TYPE = ME.RegionType.HYPERCUBE
+  REGION_TYPE = ME.RegionType.HYPER_CUBE
 
   # To use the model, must call initialize_coords before forward pass.
   # Once data is processed, call clear to reset the model before calling initialize_coords
@@ -445,7 +445,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=conv1_kernel_size,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm1 = get_norm(NORM_TYPE, CHANNELS[1], bn_momentum=bn_momentum, dimension=D)
@@ -464,7 +464,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm2 = get_norm(NORM_TYPE, CHANNELS[2], bn_momentum=bn_momentum, dimension=D)
@@ -483,7 +483,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm3 = get_norm(NORM_TYPE, CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
@@ -502,7 +502,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm4 = get_norm(NORM_TYPE, CHANNELS[4], bn_momentum=bn_momentum, dimension=D)
@@ -521,7 +521,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm4_tr = get_norm(
@@ -541,7 +541,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm3_tr = get_norm(
@@ -561,7 +561,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm2_tr = get_norm(
@@ -581,7 +581,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
 
     # self.block1_tr = BasicBlockBN(TR_CHANNELS[1], TR_CHANNELS[1], bn_momentum=bn_momentum, D=D)
@@ -592,7 +592,7 @@ class ResUNet2(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=True,
+        bias=True,
         dimension=D)
 
   def forward(self, x):
@@ -643,8 +643,8 @@ class ResUNet2(ME.MinkowskiNetwork):
     if self.normalize_feature:
       return ME.SparseTensor(
           out.F / (torch.norm(out.F, p=2, dim=1, keepdim=True) + 1e-8),
-          coords_key=out.coords_key,
-          coords_manager=out.coords_man)
+          coordinate_map_key=out.coordinate_map_key,
+          coordinate_manager=out.coordinate_manager)
     else:
       return out
 
@@ -666,7 +666,7 @@ class ResUNetBN2C(ResUNet2):
 
 
 class ResUNetBN2CX(ResUNetBN2C):
-  REGION_TYPE = ME.RegionType.HYPERCROSS
+  REGION_TYPE = ME.RegionType.HYPER_CROSS
 
 
 class ResUNetBN2D(ResUNet2):
@@ -688,7 +688,7 @@ class ResUNetBN2F(ResUNet2):
 
 
 class ResUNetBN2FX(ResUNetBN2F):
-  REGION_TYPE = ME.RegionType.HYPERCROSS
+  REGION_TYPE = ME.RegionType.HYPER_CROSS
 
 
 class ResUNet2v2(ME.MinkowskiNetwork):
@@ -699,7 +699,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
   # None        b1, b2, b3, b4, btr4, btr3, btr2
   #               1  2  3  4,-4,-3,-2,-1
   DEPTHS = [None, 1, 1, 1, 1, 1, 1, 1, None]
-  REGION_TYPE = ME.RegionType.HYPERCUBE
+  REGION_TYPE = ME.RegionType.HYPER_CUBE
 
   # To use the model, must call initialize_coords before forward pass.
   # Once data is processed, call clear to reset the model before calling initialize_coords
@@ -724,7 +724,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=conv1_kernel_size,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm1 = get_norm(NORM_TYPE, CHANNELS[1], bn_momentum=bn_momentum, dimension=D)
 
@@ -743,7 +743,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm2 = get_norm(NORM_TYPE, CHANNELS[2], bn_momentum=bn_momentum, dimension=D)
 
@@ -762,7 +762,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm3 = get_norm(NORM_TYPE, CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
 
@@ -781,7 +781,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm4 = get_norm(NORM_TYPE, CHANNELS[4], bn_momentum=bn_momentum, dimension=D)
 
@@ -800,7 +800,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm4_tr = get_norm(
         NORM_TYPE, TR_CHANNELS[4], bn_momentum=bn_momentum, dimension=D)
@@ -820,7 +820,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm3_tr = get_norm(
         NORM_TYPE, TR_CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
@@ -840,7 +840,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
     self.norm2_tr = get_norm(
         NORM_TYPE, TR_CHANNELS[2], bn_momentum=bn_momentum, dimension=D)
@@ -860,7 +860,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
 
     # self.block1_tr = BasicBlockBN(TR_CHANNELS[1], TR_CHANNELS[1], bn_momentum=bn_momentum, dimension=D)
@@ -871,7 +871,7 @@ class ResUNet2v2(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=True,
+        bias=True,
         dimension=D)
     self.weight_initialization()
 
@@ -932,8 +932,8 @@ class ResUNet2v2(ME.MinkowskiNetwork):
     if self.normalize_feature:
       return ME.SparseTensor(
           out.F / (torch.norm(out.F, p=2, dim=1, keepdim=True) + 1e-8),
-          coords_key=out.coords_key,
-          coords_manager=out.coords_man)
+          coordinate_map_key=out.coordinate_map_key,
+          coordinate_manager=out.coordinate_manager)
     else:
       return out
 
@@ -977,7 +977,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
   BLOCK_NORM_TYPE = 'BN'
   CHANNELS = [None, 32, 64, 128, 256]
   TR_CHANNELS = [None, 32, 64, 64, 128]
-  REGION_TYPE = ME.RegionType.HYPERCUBE
+  REGION_TYPE = ME.RegionType.HYPER_CUBE
 
   # To use the model, must call initialize_coords before forward pass.
   # Once data is processed, call clear to reset the model before calling initialize_coords
@@ -1001,8 +1001,8 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=conv1_kernel_size,
         stride=1,
         dilation=1,
-        has_bias=False,
-        region_type=ME.RegionType.HYPERCUBE,
+        bias=False,
+        region_type=ME.RegionType.HYPER_CUBE,
         dimension=D)
     self.norm1 = get_norm(NORM_TYPE, CHANNELS[1], bn_momentum=bn_momentum, dimension=D)
 
@@ -1021,7 +1021,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm2 = get_norm(NORM_TYPE, CHANNELS[2], bn_momentum=bn_momentum, dimension=D)
@@ -1041,7 +1041,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm3 = get_norm(NORM_TYPE, CHANNELS[3], bn_momentum=bn_momentum, dimension=D)
@@ -1061,8 +1061,8 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=1,
         dilation=1,
-        has_bias=False,
-        region_type=ME.RegionType.HYPERCUBE,
+        bias=False,
+        region_type=ME.RegionType.HYPER_CUBE,
         dimension=D)
     self.norm4 = get_norm(NORM_TYPE, CHANNELS[4], bn_momentum=bn_momentum, dimension=D)
 
@@ -1071,7 +1071,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         CHANNELS[4],
         CHANNELS[4],
         bn_momentum=bn_momentum,
-        region_type=ME.RegionType.HYPERCUBE,
+        region_type=ME.RegionType.HYPER_CUBE,
         dimension=D)
 
     self.conv4_tr = conv_tr(
@@ -1080,8 +1080,8 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
-        region_type=ME.RegionType.HYPERCUBE,
+        bias=False,
+        region_type=ME.RegionType.HYPER_CUBE,
         dimension=D)
     self.norm4_tr = get_norm(
         NORM_TYPE, TR_CHANNELS[4], bn_momentum=bn_momentum, dimension=D)
@@ -1100,7 +1100,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm3_tr = get_norm(
@@ -1120,7 +1120,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=3,
         stride=2,
         dilation=1,
-        has_bias=False,
+        bias=False,
         region_type=REGION_TYPE,
         dimension=D)
     self.norm2_tr = get_norm(
@@ -1140,7 +1140,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=False,
+        bias=False,
         dimension=D)
 
     # self.block1_tr = BasicBlockBN(TR_CHANNELS[1], TR_CHANNELS[1], bn_momentum=bn_momentum, D=D)
@@ -1151,7 +1151,7 @@ class ResUNet2SP(ME.MinkowskiNetwork):
         kernel_size=1,
         stride=1,
         dilation=1,
-        has_bias=True,
+        bias=True,
         dimension=D)
 
   def forward(self, x):
@@ -1205,8 +1205,8 @@ class ResUNet2SP(ME.MinkowskiNetwork):
     if self.normalize_feature:
       return ME.SparseTensor(
           out.F / (torch.norm(out.F, p=2, dim=1, keepdim=True) + 1e-8),
-          coords_key=out.coords_key,
-          coords_manager=out.coords_man)
+          coordinate_map_key=out.coordinate_map_key,
+          coordinate_manager=out.coordinate_manager)
     else:
       return out
 
@@ -1218,4 +1218,4 @@ class ResUNetBN2SPC(ResUNet2SP):
 
 
 class ResUNetBN2SPCX(ResUNetBN2SPC):
-  REGION_TYPE = ME.RegionType.HYPERCROSS
+  REGION_TYPE = ME.RegionType.HYPER_CROSS

@@ -160,7 +160,7 @@ class DeepGlobalRegistration:
     '''
     Step 1: extract fast and accurate FCGF feature per point
     '''
-    sinput = ME.SparseTensor(feats, coords=coords).to(self.device)
+    sinput = ME.SparseTensor(feats, coordinates=coords, device=self.device)
 
     return self.fcgf_model(sinput).F
 
@@ -207,7 +207,7 @@ class DeepGlobalRegistration:
     '''
     Step 4: predict inlier likelihood
     '''
-    sinput = ME.SparseTensor(inlier_feats, coords=coords).to(self.device)
+    sinput = ME.SparseTensor(inlier_feats, coordinates=coords, device=self.device)
     soutput = self.inlier_model(sinput)
 
     return soutput.F

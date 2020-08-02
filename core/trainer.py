@@ -130,6 +130,8 @@ class WeightedProcrustesTrainer:
 
     # Train and valid
     for epoch in range(self.start_epoch, self.max_epoch + 1):
+      torch.cuda.empty_cache()
+
       lr = self.scheduler.get_lr()
       logging.info(f" Epoch: {epoch}, LR: {lr}")
       self._train_epoch(epoch)
@@ -215,7 +217,8 @@ class WeightedProcrustesTrainer:
         # Inlier prediction with 6D ConvNet
         inlier_timer.tic()
         reg_sinput = ME.SparseTensor(reg_feats.contiguous(),
-                                     coords=reg_coords.int()).to(self.device)
+                                     coordinates=reg_coords.int(),
+                                     device=self.device)
         reg_soutput = self.inlier_model(reg_sinput)
         inlier_timer.toc()
 
@@ -292,10 +295,6 @@ class WeightedProcrustesTrainer:
         else:
           self.optimizer.step()
 
-      gc.collect()
-
-      torch.cuda.empty_cache()
-
       total_loss += batch_loss
       total_num += 1.0
       total_timer.toc()
@@ -313,6 +312,8 @@ class WeightedProcrustesTrainer:
 
         correspondence_accuracy = is_correct.sum() / len(is_correct)
 
+        total, free = ME.get_gpu_memory_info()
+        used = (total - free) / 1073741824.0
         stat = {
             'loss': loss_meter.avg,
             'precision': precision,
@@ -322,6 +323,7 @@ class WeightedProcrustesTrainer:
             'balanced_accuracy': balanced_accuracy,
             'f1': f1,
             'num_valid': average_valid_meter.avg,
+            'gpu_used': used,
         }
 
         for k, v in stat.items():
@@ -337,7 +339,7 @@ class WeightedProcrustesTrainer:
             f"Succ rate: {regist_succ_meter.avg:3e}",
             f"Avg num valid: {average_valid_meter.avg:3e}",
             f"\tData time: {data_meter.avg:.4f}, Train time: {total_timer.avg - data_meter.avg:.4f},",
-            f"NN search time: {nn_timer.avg:.3e}, Total time: {total_timer.avg:.4f}"
+            f"Total time: {total_timer.avg:.4f}"
         ]))
 
         loss_meter.reset()
@@ -396,7 +398,8 @@ class WeightedProcrustesTrainer:
 
       inlier_timer.tic()
       reg_sinput = ME.SparseTensor(reg_feats.contiguous(),
-                                   coords=reg_coords.int()).to(self.device)
+                                   coordinates=reg_coords.int(),
+                                   device=self.device)
       reg_soutput = self.inlier_model(reg_sinput)
       inlier_timer.toc()
 
@@ -437,8 +440,6 @@ class WeightedProcrustesTrainer:
       fn += (~pred_on_pos).sum().item()
 
       num_data += 1
-      torch.cuda.empty_cache()
-
       if batch_idx % self.config.stat_freq == 0:
         precision = tp / (tp + fp + eps)
         recall = tp / (tp + fn + eps)
@@ -448,7 +449,6 @@ class WeightedProcrustesTrainer:
         balanced_accuracy = (tpr + tnr) / 2
         logging.info(' '.join([
             f"Validation iter {num_data} / {tot_num_data} : Data Loading Time: {data_timer.avg:.3e},",
-            f"NN search time: {nn_timer.avg:.3e}",
             f"Feature Extraction Time: {feat_timer.avg:.3e}, Inlier Time: {inlier_timer.avg:.3e},",
             f"Loss: {loss_meter.avg:.4f}, Hit Ratio: {hit_ratio_meter.avg:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}, ",
             f"TPR: {tpr:.4f}, TNR: {tnr:.4f}, BAcc: {balanced_accuracy:.4f}, ",
@@ -465,10 +465,10 @@ class WeightedProcrustesTrainer:
     balanced_accuracy = (tpr + tnr) / 2
 
     logging.info(' '.join([
-        f"Feature Extraction Time: {feat_timer.avg:.3e}, NN search time: {nn_timer.avg:.3e}",
-        f"Inlier Time: {inlier_timer.avg:.3e}, Final Loss: {loss_meter.avg}, ",
-        f"Loss: {loss_meter.avg}, Hit Ratio: {hit_ratio_meter.avg:.4f}, Precision: {precision}, Recall: {recall}, F1: {f1}, ",
-        f"TPR: {tpr}, TNR: {tnr}, BAcc: {balanced_accuracy}, ",
+        f"Feature Extraction Time: {feat_timer.avg:.3e},",
+        f"Inlier Time: {inlier_timer.avg:.3e}, Final Loss: {loss_meter.avg},",
+        f"Loss: {loss_meter.avg}, Hit Ratio: {hit_ratio_meter.avg:.4f}, Precision: {precision}, Recall: {recall}, F1: {f1},",
+        f"TPR: {tpr}, TNR: {tnr}, BAcc: {balanced_accuracy},",
         f"RTE: {regist_rte_meter.avg:.3e}, RRE: {regist_rre_meter.avg:.3e}, DGR Time: {dgr_timer.avg:.3e}",
         f"DGR Succ rate: {regist_succ_meter.avg:3e}",
     ]))
@@ -630,10 +630,10 @@ class WeightedProcrustesTrainer:
   def generate_inlier_input(self, xyz0, xyz1, iC0, iC1, iF0, iF1, len_batch, pos_pairs):
     # pairs consist of (xyz1 index, xyz0 index)
     stime = time.time()
-    sinput0 = ME.SparseTensor(iF0, coords=iC0).to(self.device)
+    sinput0 = ME.SparseTensor(iF0, coordinates=iC0, device=self.device)
     oF0 = self.feat_model(sinput0).F
 
-    sinput1 = ME.SparseTensor(iF1, coords=iC1).to(self.device)
+    sinput1 = ME.SparseTensor(iF1, coordinates=iC1, device=self.device)
     oF1 = self.feat_model(sinput1).F
     feat_time = time.time() - stime
 
