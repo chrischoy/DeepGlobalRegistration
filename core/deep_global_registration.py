@@ -52,10 +52,14 @@ def registration_ransac_based_on_correspondence(pcd0, pcd1, idx0, idx1,
   corres = np.stack((idx0, idx1), axis=1)
   corres = o3d.utility.Vector2iVector(corres)
 
-  result = o3d.registration.registration_ransac_based_on_correspondence(
-      pcd0, pcd1, corres, distance_threshold,
-      o3d.registration.TransformationEstimationPointToPoint(False), 4,
-      o3d.registration.RANSACConvergenceCriteria(4000000, num_iterations))
+  result = o3d.pipelines.registration.registration_ransac_based_on_correspondence(
+      source = pcd0,
+      target = pcd1,
+      corres = corres,
+      max_correspondence_distance = distance_threshold,
+      estimation_method = o3d.pipelines.registration.TransformationEstimationPointToPoint(False),
+      ransac_n = 4,
+      criteria = o3d.pipelines.registration.RANSACConvergenceCriteria(4000000, num_iterations))
 
   return result.transformation
 
@@ -145,13 +149,13 @@ class DeepGlobalRegistration:
 
     # Voxelization:
     # Maintain double type for xyz to improve numerical accuracy in quantization
-    sel = ME.utils.sparse_quantize(xyz / self.voxel_size, return_index=True)
+    _, sel = ME.utils.sparse_quantize(xyz / self.voxel_size, return_index=True)
     npts = len(sel)
 
-    xyz = torch.from_numpy(xyz[sel])
+    xyz = torch.from_numpy(xyz[sel]).to(self.device)
 
     # ME standard batch coordinates
-    coords = ME.utils.batched_coordinates([torch.floor(xyz / self.voxel_size).int()])
+    coords = ME.utils.batched_coordinates([torch.floor(xyz / self.voxel_size).int()], device=self.device)
     feats = torch.ones(npts, 1)
 
     return xyz.float(), coords, feats
@@ -160,7 +164,7 @@ class DeepGlobalRegistration:
     '''
     Step 1: extract fast and accurate FCGF feature per point
     '''
-    sinput = ME.SparseTensor(feats, coords=coords).to(self.device)
+    sinput = ME.SparseTensor(feats, coordinates=coords, device=self.device)
 
     return self.fcgf_model(sinput).F
 
@@ -173,7 +177,7 @@ class DeepGlobalRegistration:
                        nn_max_n=self.network_config.nn_max_n,
                        knn=1,
                        return_distance=False)
-    corres_idx0 = torch.arange(len(nns)).long().squeeze()
+    corres_idx0 = torch.arange(len(nns)).long().squeeze().to(self.device)
     corres_idx1 = nns.long().squeeze()
 
     return corres_idx0, corres_idx1
@@ -207,7 +211,7 @@ class DeepGlobalRegistration:
     '''
     Step 4: predict inlier likelihood
     '''
-    sinput = ME.SparseTensor(inlier_feats, coords=coords).to(self.device)
+    sinput = ME.SparseTensor(inlier_feats, coordinates=coords, device=self.device)
     soutput = self.inlier_model(sinput)
 
     return soutput.F
@@ -278,7 +282,7 @@ class DeepGlobalRegistration:
       try:
         rot, trans, opt_output = GlobalRegistration(xyz0[corres_idx0],
                                                     xyz1[corres_idx1],
-                                                    weights=weights.detach().cpu(),
+                                                    weights=weights.detach(),
                                                     break_threshold_ratio=1e-4,
                                                     quantization_size=2 *
                                                     self.voxel_size,
@@ -311,9 +315,10 @@ class DeepGlobalRegistration:
       print(f'=> Safeguard takes {safeguard_time:.2} s')
 
     if self.use_icp:
-      T = o3d.registration.registration_icp(
-          make_open3d_point_cloud(xyz0),
-          make_open3d_point_cloud(xyz1), self.voxel_size * 2, T,
-          o3d.registration.TransformationEstimationPointToPoint()).transformation
+      T = o3d.pipelines.registration.registration_icp(
+          source=make_open3d_point_cloud(xyz0),
+          target=make_open3d_point_cloud(xyz1),
+          max_correspondence_distance=self.voxel_size * 2,
+          init=T).transformation
 
     return T
