@@ -22,9 +22,9 @@ def conv(in_channels,
          dimension=3):
   if not isinstance(region_type, ME.RegionType):
     if region_type == 0:
-      region_type = ME.RegionType.HYPERCUBE
+      region_type = ME.RegionType.HYPER_CUBE
     elif region_type == 1:
-      region_type = ME.RegionType.HYPERCROSS
+      region_type = ME.RegionType.HYPER_CROSS
     else:
       raise ValueError('Unsupported region type')
 
@@ -50,7 +50,7 @@ def conv_tr(in_channels,
             stride=1,
             dilation=1,
             has_bias=False,
-            region_type=ME.RegionType.HYPERCUBE,
+            region_type=ME.RegionType.HYPER_CUBE,
             dimension=-1):
   assert dimension > 0, 'Dimension must be a positive integer'
   kernel_generator = ME.KernelGenerator(
@@ -75,7 +75,7 @@ def conv_tr(in_channels,
       kernel_size=kernel_size,
       stride=stride,
       dilation=dilation,
-      has_bias=has_bias,
+      bias=has_bias,
       kernel_generator=kernel_generator,
       dimension=dimension)
 
@@ -174,7 +174,7 @@ def conv_norm_non(inc,
                   stride,
                   dimension,
                   bn_momentum=0.05,
-                  region_type=ME.RegionType.HYPERCUBE,
+                  region_type=ME.RegionType.HYPER_CUBE,
                   norm_type='BN',
                   nonlinearity='ELU'):
   return nn.Sequential(
