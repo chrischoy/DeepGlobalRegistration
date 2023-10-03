@@ -58,5 +58,5 @@ torchvision==0.15.2
 traitlets==5.9.0
 triton==2.0.0
 typing_extensions==4.6.3
-urllib3==2.0.3
+urllib3==2.0.6
 Werkzeug==2.2.3
